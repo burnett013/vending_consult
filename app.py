@@ -97,14 +97,33 @@ def main():
     st.sidebar.subheader("Email Report")
     recipient_email = st.sidebar.text_input("Recipient Email", value="andyburnett013@gmail.com")
     
+    use_own_creds = st.sidebar.checkbox("Send from my own Gmail account")
+    if use_own_creds:
+        sender_email = st.sidebar.text_input("Your Gmail Address")
+        sender_password = st.sidebar.text_input("Your App Password", type="password")
+        st.sidebar.info("Note: You must use an App Password, not your login password.")
+    
     if st.sidebar.button("Send CSV via Email"):
         df = load_data()
         if not df.empty:
-            # Check for secrets
-            if "email" in st.secrets:
-                sender_email = st.secrets["email"]["sender_email"]
-                sender_password = st.secrets["email"]["sender_password"]
-                
+            # Determine credentials
+            creds_available = False
+            final_sender_email = None
+            final_sender_password = None
+
+            if use_own_creds:
+                if sender_email and sender_password:
+                    final_sender_email = sender_email
+                    final_sender_password = sender_password
+                    creds_available = True
+                else:
+                    st.sidebar.error("Please enter both your email and app password.")
+            elif "email" in st.secrets:
+                final_sender_email = st.secrets["email"]["sender_email"]
+                final_sender_password = st.secrets["email"]["sender_password"]
+                creds_available = True
+            
+            if creds_available:
                 try:
                     import smtplib
                     from email.mime.text import MIMEText
@@ -113,7 +132,7 @@ def main():
 
                     msg = MIMEMultipart()
                     msg['Subject'] = f"Vending Machine Report - {datetime.now().strftime('%Y-%m-%d')}"
-                    msg['From'] = sender_email
+                    msg['From'] = final_sender_email
                     msg['To'] = recipient_email
 
                     body = "Please find attached the latest vending machine refill report."
@@ -127,13 +146,13 @@ def main():
 
                     # Send email
                     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-                        server.login(sender_email, sender_password)
+                        server.login(final_sender_email, final_sender_password)
                         server.send_message(msg)
                     
                     st.sidebar.success(f"Email sent successfully to {recipient_email}!")
                 except Exception as e:
                     st.sidebar.error(f"Failed to send email: {str(e)}")
-            else:
+            elif not use_own_creds:
                 st.sidebar.error("Email configuration missing!")
                 with st.sidebar.expander("How to fix this?"):
                     st.markdown("""
