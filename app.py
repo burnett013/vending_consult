@@ -119,7 +119,19 @@ def main():
                 except Exception as e:
                     st.sidebar.error(f"Failed to send email: {str(e)}")
             else:
-                st.sidebar.warning("Email credentials not found in secrets. Please configure [email] in .streamlit/secrets.toml or Streamlit Cloud secrets.")
+                st.sidebar.error("Email configuration missing!")
+                with st.sidebar.expander("How to fix this?"):
+                    st.markdown("""
+                    1. Go to your app dashboard on Streamlit Cloud.
+                    2. Click **Settings** -> **Secrets**.
+                    3. Paste this configuration:
+                    ```toml
+                    [email]
+                    sender_email = "your_email@gmail.com"
+                    sender_password = "your_app_password"
+                    ```
+                    **Note:** Use an App Password for Gmail.
+                    """)
         else:
             st.sidebar.warning("No data to send.")
 
