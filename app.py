@@ -100,7 +100,7 @@ def main():
     use_own_creds = st.sidebar.checkbox("Send from my own Gmail account")
     if use_own_creds:
         sender_email = st.sidebar.text_input("Your Gmail Address")
-        sender_password = st.sidebar.text_input("Your App Password", type="password")
+        sender_password = st.sidebar.text_input("Your App Password (not account password)", type="password")
         st.sidebar.info("Note: You must use an App Password, not your login password.")
     
     if st.sidebar.button("Send CSV via Email"):
