@@ -77,9 +77,24 @@ def main():
         st.sidebar.success("All data has been reset!")
         st.rerun()
 
-    # Email Report Section
+    # Export Section
     st.sidebar.markdown("---")
-    st.sidebar.header("Email Report")
+    st.sidebar.header("Export Data")
+    
+    # Download Option
+    df = load_data()
+    if not df.empty:
+        csv = df.to_csv(index=False).encode('utf-8')
+        st.sidebar.download_button(
+            "Download CSV",
+            csv,
+            "vending_data.csv",
+            "text/csv",
+            key='sidebar-download-csv'
+        )
+    
+    # Email Option
+    st.sidebar.subheader("Email Report")
     recipient_email = st.sidebar.text_input("Recipient Email", value="andyburnett013@gmail.com")
     
     if st.sidebar.button("Send CSV via Email"):
