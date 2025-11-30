@@ -65,6 +65,18 @@ def main():
             else:
                 st.sidebar.error("Please fill in all required fields (Location, Product, SKU).")
 
+    # Reset Data Button
+    st.sidebar.markdown("---")
+    if st.sidebar.button("Reset All Data", type="primary"):
+        # Create empty dataframe with headers
+        df = pd.DataFrame(columns=[
+            "Date", "Location", "Product", "SKU", 
+            "Starting Quantity", "Ending Quantity"
+        ])
+        save_data(df)
+        st.sidebar.success("All data has been reset!")
+        st.rerun()
+
     # Main area for data display
     st.header("Refill History")
     
