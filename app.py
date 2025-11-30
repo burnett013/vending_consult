@@ -77,6 +77,52 @@ def main():
         st.sidebar.success("All data has been reset!")
         st.rerun()
 
+    # Email Report Section
+    st.sidebar.markdown("---")
+    st.sidebar.header("Email Report")
+    recipient_email = st.sidebar.text_input("Recipient Email", value="andyburnett013@gmail.com")
+    
+    if st.sidebar.button("Send CSV via Email"):
+        df = load_data()
+        if not df.empty:
+            # Check for secrets
+            if "email" in st.secrets:
+                sender_email = st.secrets["email"]["sender_email"]
+                sender_password = st.secrets["email"]["sender_password"]
+                
+                try:
+                    import smtplib
+                    from email.mime.text import MIMEText
+                    from email.mime.multipart import MIMEMultipart
+                    from email.mime.application import MIMEApplication
+
+                    msg = MIMEMultipart()
+                    msg['Subject'] = f"Vending Machine Report - {datetime.now().strftime('%Y-%m-%d')}"
+                    msg['From'] = sender_email
+                    msg['To'] = recipient_email
+
+                    body = "Please find attached the latest vending machine refill report."
+                    msg.attach(MIMEText(body, 'plain'))
+
+                    # Attach CSV
+                    csv_data = df.to_csv(index=False)
+                    part = MIMEApplication(csv_data, Name="vending_data.csv")
+                    part['Content-Disposition'] = 'attachment; filename="vending_data.csv"'
+                    msg.attach(part)
+
+                    # Send email
+                    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                        server.login(sender_email, sender_password)
+                        server.send_message(msg)
+                    
+                    st.sidebar.success(f"Email sent successfully to {recipient_email}!")
+                except Exception as e:
+                    st.sidebar.error(f"Failed to send email: {str(e)}")
+            else:
+                st.sidebar.warning("Email credentials not found in secrets. Please configure [email] in .streamlit/secrets.toml or Streamlit Cloud secrets.")
+        else:
+            st.sidebar.warning("No data to send.")
+
     # Main area for data display
     st.header("Refill History")
     
